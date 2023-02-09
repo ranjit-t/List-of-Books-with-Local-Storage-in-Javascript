@@ -1,56 +1,3 @@
-// class Books {
-//   constructor(title, author, year) {
-//     this.title = title;
-//     this.author = author;
-//     this.year = year;
-//   }
-// }
-
-// class UI {
-//   static displayBooks() {
-//     const storedBooks = [
-//       {
-//         title: "Earth",
-//         author: "Ran",
-//         year: 2020,
-//       },
-//       {
-//         title: "Venus",
-//         author: "Ran",
-//         year: 2021,
-//       },
-//     ];
-//     //const books = storedBooks;
-//     storedBooks.forEach((book) => {
-//       UI.addBooktoList(book);
-//     });
-//   }
-//   static addBooktoList(book) {
-//     const list = document.querySelector("#booksList");
-//     const row = document.createElement("tr");
-//     row.innerHTML = `
-//     <td>${book.title}</td>
-//     <td>${book.author}</td>
-//     <td>${book.year}</td>
-//     <td><i class="fa fa-trash  btn btn-danger btn-sm" aria-hidden="true"></i></td>`;
-//     list.appendChild(row);
-//   }
-// }
-
-// document.addEventListener("DOMContentLoaded", UI.displayBooks);
-
-// document.addEventListener("DOMContentLoaded", UI.displayBooks);
-
-// document.querySelector("button").addEventListener("click", (e) => {
-//   e.preventDefault();
-//   const title = document.querySelector("#title").value;
-//   const author = document.querySelector("#author").value;
-//   const year = document.querySelector("#year").value;
-
-//   const book = new Books(title, author, year);
-//   UI.addBooktoList(book);
-// });
-
 class Books {
   constructor(title, author, year) {
     this.title = title;
@@ -59,6 +6,39 @@ class Books {
   }
 }
 
+//
+//Storage Class
+//
+
+class Store {
+  static getBooks() {
+    let books;
+    if (localStorage.getItem("books") === null) {
+      books = [];
+    } else {
+      books = JSON.parse(localStorage.getItem("books"));
+    }
+    return books;
+  }
+  static addBook(book) {
+    const books = Store.getBooks();
+    books.push(book);
+    localStorage.setItem("books", JSON.stringify(books));
+  }
+  static remove(title) {
+    const books = Store.getBooks();
+    books.forEach((book, idx) => {
+      if (book.title === title) {
+        books.splice(idx, 1);
+      }
+    });
+    localStorage.setItem("books", JSON.stringify(books));
+  }
+}
+
+//
+// Function that is adding books
+//
 function addBooktoList(book) {
   const list = document.querySelector("#booksList");
   const row = document.createElement("tr");
@@ -70,28 +50,27 @@ function addBooktoList(book) {
   list.appendChild(row);
 }
 
-let storedBooks = [
-  {
-    title: "Silva Mind Control Technique",
-    author: "José Silva",
-    year: 2020,
-  },
-  {
-    title: "Peaks and Valleys",
-    author: "Johnson",
-    year: 2021,
-  },
-];
+//
+// Function that is displaying books
+//
 
-class UI {
-  static displayStoredBooks() {
-    storedBooks.forEach((book) => {
-      addBooktoList(book);
-    });
-  }
+function displayStoredBooks() {
+  Store.getBooks().forEach((book) => {
+    addBooktoList(book);
+  });
 }
 
-document.addEventListener("DOMContentLoaded", UI.displayStoredBooks);
+//
+//
+//DOM Event to display in UI
+//
+
+document.addEventListener("DOMContentLoaded", displayStoredBooks);
+
+//
+//
+//DOM Event to add an instant book in UI
+//
 
 document.querySelector("button").addEventListener("click", (e) => {
   e.preventDefault();
@@ -100,7 +79,7 @@ document.querySelector("button").addEventListener("click", (e) => {
   const year = document.querySelector("#year").value;
   if (title && author && year) {
     const book = new Books(title, author, year);
-    storedBooks.push(book);
+    Store.addBook(book);
     addBooktoList(book);
     message("success");
     document.querySelector("#title").value = "";
@@ -111,9 +90,20 @@ document.querySelector("button").addEventListener("click", (e) => {
   }
 });
 
+//
+// DOM to Remove Book
+//
+
 let rows = document.querySelector("tr");
 document.querySelector("#booksList").addEventListener("click", (e) => {
-  e.target.nodeName === "I" && e.target.parentElement.parentElement.remove();
+  if (e.target.nodeName === "I") {
+    e.target.parentElement.parentElement.remove();
+    Store.remove(
+      e.target.parentElement.previousElementSibling.previousElementSibling.previousElementSibling
+        .innerHTML
+    );
+    message("removed");
+  }
 });
 //
 //
@@ -130,9 +120,18 @@ function message(status) {
     setTimeout(() => {
       message.remove();
     }, 2000);
-  } else {
+  } else if (status === "success") {
     const message = document.createElement("div");
     message.innerHTML = `<div class="alert alert-success">Book Added</div>`;
+    const form = document.querySelector("form");
+    const container = document.querySelector(".container");
+    container.insertBefore(message, form);
+    setTimeout(() => {
+      message.remove();
+    }, 2000);
+  } else {
+    const message = document.createElement("div");
+    message.innerHTML = `<div class="alert alert-info">Book Removed</div>`;
     const form = document.querySelector("form");
     const container = document.querySelector(".container");
     container.insertBefore(message, form);
