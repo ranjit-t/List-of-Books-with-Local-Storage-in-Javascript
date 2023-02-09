@@ -70,20 +70,21 @@ function addBooktoList(book) {
   list.appendChild(row);
 }
 
+let storedBooks = [
+  {
+    title: "Silva Mind Control Technique",
+    author: "José Silva",
+    year: 2020,
+  },
+  {
+    title: "Peaks and Valleys",
+    author: "Johnson",
+    year: 2021,
+  },
+];
+
 class UI {
   static displayStoredBooks() {
-    const storedBooks = [
-      {
-        title: "Our Planet",
-        author: "Ran",
-        year: 2020,
-      },
-      {
-        title: "Greatest Minds",
-        author: "Ran",
-        year: 2021,
-      },
-    ];
     storedBooks.forEach((book) => {
       addBooktoList(book);
     });
@@ -97,7 +98,46 @@ document.querySelector("button").addEventListener("click", (e) => {
   const title = document.querySelector("#title").value;
   const author = document.querySelector("#author").value;
   const year = document.querySelector("#year").value;
-
-  const book = new Books(title, author, year);
-  addBooktoList(book);
+  if (title && author && year) {
+    const book = new Books(title, author, year);
+    storedBooks.push(book);
+    addBooktoList(book);
+    message("success");
+    document.querySelector("#title").value = "";
+    document.querySelector("#author").value = "";
+    document.querySelector("#year").value = "";
+  } else {
+    message("failed");
+  }
 });
+
+let rows = document.querySelector("tr");
+document.querySelector("#booksList").addEventListener("click", (e) => {
+  e.target.nodeName === "I" && e.target.parentElement.parentElement.remove();
+});
+//
+//
+// Creating a function for Alerting
+//
+//
+function message(status) {
+  if (status === "failed") {
+    const message = document.createElement("div");
+    message.innerHTML = `<div class="alert alert-danger">Please Fill in All Fields</div>`;
+    const form = document.querySelector("form");
+    const container = document.querySelector(".container");
+    container.insertBefore(message, form);
+    setTimeout(() => {
+      message.remove();
+    }, 2000);
+  } else {
+    const message = document.createElement("div");
+    message.innerHTML = `<div class="alert alert-success">Book Added</div>`;
+    const form = document.querySelector("form");
+    const container = document.querySelector(".container");
+    container.insertBefore(message, form);
+    setTimeout(() => {
+      message.remove();
+    }, 2000);
+  }
+}
